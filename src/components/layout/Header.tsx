@@ -29,7 +29,7 @@ export default function Header() {
               <div className="h-8 w-8 rounded-lg bg-blue-600 flex items-center justify-center">
                 <span className="text-white font-bold text-lg">TC</span>
               </div>
-              <span className="text-xl font-bold text-gray-900">TradeCareers</span>
+              <span className="text-xl font-bold text-blue-800">TradeCareers</span>
             </Link>
           </div>
 
