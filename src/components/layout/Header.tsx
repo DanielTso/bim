@@ -40,10 +40,10 @@ export default function Header() {
                 key={item.name}
                 href={item.href}
                 className={cn(
-                  'text-sm font-medium transition-colors',
+                  'text-sm font-semibold transition-colors',
                   isActive(item.href)
                     ? 'text-blue-600'
-                    : 'text-gray-900 hover:text-blue-600'
+                    : 'text-black hover:text-blue-600'
                 )}
               >
                 {item.name}
@@ -91,10 +91,10 @@ export default function Header() {
                   key={item.name}
                   href={item.href}
                   className={cn(
-                    'block rounded-md px-3 py-2 text-base font-medium transition-colors',
+                    'block rounded-md px-3 py-2 text-base font-semibold transition-colors',
                     isActive(item.href)
                       ? 'bg-blue-50 text-blue-600'
-                      : 'text-gray-900 hover:bg-gray-50 hover:text-blue-600'
+                      : 'text-black hover:bg-gray-50 hover:text-blue-600'
                   )}
                   onClick={() => setMobileMenuOpen(false)}
                 >
