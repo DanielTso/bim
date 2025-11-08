@@ -40,10 +40,10 @@ export default function Header() {
                 key={item.name}
                 href={item.href}
                 className={cn(
-                  'text-sm font-medium transition-colors hover:text-blue-600',
+                  'text-sm font-medium transition-colors',
                   isActive(item.href)
                     ? 'text-blue-600'
-                    : 'text-gray-700'
+                    : 'text-gray-900 hover:text-blue-600'
                 )}
               >
                 {item.name}
@@ -94,7 +94,7 @@ export default function Header() {
                     'block rounded-md px-3 py-2 text-base font-medium transition-colors',
                     isActive(item.href)
                       ? 'bg-blue-50 text-blue-600'
-                      : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
+                      : 'text-gray-900 hover:bg-gray-50 hover:text-blue-600'
                   )}
                   onClick={() => setMobileMenuOpen(false)}
                 >
