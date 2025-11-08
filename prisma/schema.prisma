@@ -1,0 +1,242 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// User and Authentication
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  emailVerified DateTime?
+  image         String?
+  bio           String?
+  location      String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  accounts      Account[]
+  sessions      Session[]
+  posts         Post[]
+  comments      Comment[]
+  bookmarks     Bookmark[]
+  progress      UserProgress[]
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// Trades and Career Paths
+model TradeCategory {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String
+  slug        String   @unique
+  icon        String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  trades      Trade[]
+}
+
+model Trade {
+  id              String   @id @default(cuid())
+  name            String   @unique
+  slug            String   @unique
+  description     String
+  shortDescription String
+  categoryId      String
+  averageSalary   String?
+  jobOutlook      String?
+  skills          String   // JSON string array
+  requirements    String   // JSON string array
+  imageUrl        String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  category        TradeCategory @relation(fields: [categoryId], references: [id])
+  careerPaths     CareerPath[]
+  trainingPrograms TrainingProgram[]
+  resources       Resource[]
+}
+
+model CareerPath {
+  id          String   @id @default(cuid())
+  tradeId     String
+  title       String
+  description String
+  steps       String   // JSON array of steps
+  duration    String?
+  difficulty  String?  // Beginner, Intermediate, Advanced
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  trade       Trade    @relation(fields: [tradeId], references: [id], onDelete: Cascade)
+  userProgress UserProgress[]
+}
+
+// Training and Education
+model TrainingProvider {
+  id          String   @id @default(cuid())
+  name        String
+  type        String   // School, Company, Union, Online Platform
+  description String?
+  website     String?
+  phone       String?
+  email       String?
+  address     String?
+  city        String?
+  state       String?
+  zipCode     String?
+  logoUrl     String?
+  verified    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  programs    TrainingProgram[]
+}
+
+model TrainingProgram {
+  id          String   @id @default(cuid())
+  title       String
+  description String
+  providerId  String
+  tradeId     String?
+  type        String   // Apprenticeship, Certification, Bootcamp, Course
+  duration    String?
+  cost        String?
+  format      String?  // In-person, Online, Hybrid
+  location    String?
+  startDate   String?
+  applicationUrl String?
+  requirements String?  // JSON string array
+  featured    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  provider    TrainingProvider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  trade       Trade?   @relation(fields: [tradeId], references: [id])
+}
+
+// Resources and Content
+model Resource {
+  id          String   @id @default(cuid())
+  title       String
+  description String
+  content     String   // Markdown content
+  type        String   // Article, Video, Guide, Tool
+  url         String?  // For external resources or video URLs
+  tradeId     String?
+  featured    Boolean  @default(false)
+  published   Boolean  @default(true)
+  views       Int      @default(0)
+  readTime    Int?     // Reading time in minutes
+  imageUrl    String?
+  tags        String?  // JSON string array
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  trade       Trade?   @relation(fields: [tradeId], references: [id])
+  bookmarks   Bookmark[]
+}
+
+// Community Features
+model Post {
+  id          String   @id @default(cuid())
+  title       String
+  content     String
+  authorId    String
+  published   Boolean  @default(true)
+  tradeId     String?
+  views       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  author      User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  comments    Comment[]
+}
+
+model Comment {
+  id          String   @id @default(cuid())
+  content     String
+  authorId    String
+  postId      String
+  parentId    String?  // For nested replies
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  author      User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  post        Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  parent      Comment? @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies     Comment[] @relation("CommentReplies")
+}
+
+// User Progress and Bookmarks
+model UserProgress {
+  id            String   @id @default(cuid())
+  userId        String
+  careerPathId  String
+  currentStep   Int      @default(0)
+  completed     Boolean  @default(false)
+  notes         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  careerPath    CareerPath @relation(fields: [careerPathId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, careerPathId])
+}
+
+model Bookmark {
+  id          String   @id @default(cuid())
+  userId      String
+  resourceId  String
+  createdAt   DateTime @default(now())
+
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  resource    Resource @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, resourceId])
+}
